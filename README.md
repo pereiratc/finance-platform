@@ -33,7 +33,7 @@ The application tracks a small business's financial activity:
 
 | Layer | Technology |
 |---|---|
-| Backend | C# 13, .NET 10, ASP.NET Core, Entity Framework Core |
+| Backend | C# 14, .NET 10, ASP.NET Core, Entity Framework Core |
 | Frontend | TypeScript, React 18, Vite, Tailwind CSS |
 | Database | SQL Server 2025 / Azure SQL |
 | Analytics | Power BI Desktop, DAX, Power Query |
