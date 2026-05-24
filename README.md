@@ -77,7 +77,7 @@ finance-platform/
 ## Roadmap
 
 - [x] **Phase 0**: Database schema + seed data
-- [ ] **Phase 1**: .NET 10 Web API + Docker
+- [x] **Phase 1**: .NET 10 Web API + Docker
 - [ ] **Phase 2**: GitHub Actions CI/CD
 - [ ] **Phase 3**: React + TypeScript frontend
 - [ ] **Phase 4**: Azure deployment (manual)
