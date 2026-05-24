@@ -11,7 +11,7 @@ GO
 -- =============================================================================
 -- 1. Quick health check — counts per table
 -- =============================================================================
-SELECT 'AccountTypes' AS TableName, COUNT(*) AS RowCount FROM dbo.AccountTypes
+SELECT 'AccountTypes' AS TableName, COUNT(*) AS [Row Count] FROM dbo.AccountTypes
 UNION ALL
 SELECT 'Accounts',     COUNT(*) FROM dbo.Accounts
 UNION ALL
