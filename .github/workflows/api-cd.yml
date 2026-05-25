@@ -116,7 +116,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./src/api
+          context: .
           file: ./src/api/FinancePlatform.Api/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
