@@ -1,0 +1,123 @@
+name: API — Build & Test
+
+# Runs on every pull request that touches the API or this workflow file.
+# Goal: catch broken builds and failing tests before code reaches main.
+# A failed job blocks the PR merge — that's the whole point.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/api/**"
+      - ".github/workflows/api-ci.yml"
+
+jobs:
+  build-and-test:
+    name: Build & Test (.NET 10)
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Check out the code
+      # -----------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # 2. Install the .NET 10 SDK
+      #
+      # actions/setup-dotnet reads the version you specify here.
+      # ubuntu-latest ships with some .NET versions pre-installed, but pinning
+      # explicitly means you get exactly what you want, not whatever happens to
+      # be on the runner image that week.
+      # -----------------------------------------------------------------------
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.x"
+
+      # -----------------------------------------------------------------------
+      # 3. Cache NuGet packages
+      #
+      # NuGet restore downloads packages from nuget.org. On a cold runner that
+      # takes 30-60 seconds. The cache action stores the global packages folder
+      # keyed on the hash of every .csproj file. If your dependencies haven't
+      # changed, restore is instant — it just copies from cache.
+      #
+      # Cache key strategy:
+      #   - Primary key includes OS + hash of all project files
+      #   - Restore key is a prefix fallback: if the exact hash misses, use
+      #     any prior cache for this OS. Partial cache is still faster than
+      #     nothing.
+      # -----------------------------------------------------------------------
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/src/api/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # -----------------------------------------------------------------------
+      # 4. Restore dependencies
+      #
+      # --locked-mode enforces that packages.lock.json (if present) is respected
+      # exactly. This prevents silent version drift between runs. If you haven't
+      # committed a lock file yet, remove --locked-mode; add it after you run
+      # `dotnet restore` locally and commit the resulting lock file.
+      # -----------------------------------------------------------------------
+      - name: Restore
+        run: dotnet restore src/api/FinancePlatform.slnx
+
+      # -----------------------------------------------------------------------
+      # 5. Build
+      #
+      # --no-restore: skip restore since we just did it explicitly above.
+      # -c Release: build the same configuration we'll publish and ship.
+      #             Building Release in CI and shipping Release means the binary
+      #             that passed tests is the binary that runs in production.
+      # -----------------------------------------------------------------------
+      - name: Build
+        run: dotnet build src/api/FinancePlatform.slnx --no-restore -c Release
+
+      # -----------------------------------------------------------------------
+      # 6. Test
+      #
+      # --no-build: skip rebuild since the build step just produced the binaries.
+      # -c Release: run the Release build artifacts.
+      # --logger: emit GitHub Actions-compatible test result annotations.
+      #           Failed tests appear as inline annotations on the PR diff.
+      # --results-directory: where TRX result files land.
+      #
+      # The test project uses xUnit. No database is available in this job —
+      # tests that need a real database should use TestContainers (which spins
+      # up a SQL Server container during the test run). Pure unit tests run
+      # fine without any infrastructure.
+      # -----------------------------------------------------------------------
+      - name: Test
+        run: |
+          dotnet test src/api/FinancePlatform.slnx \
+            --no-build \
+            -c Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory ./test-results
+      - name: Verify Docker build
+        run: docker build -f src/api/FinancePlatform.Api/Dockerfile ./src/api
+      # -----------------------------------------------------------------------
+      # 7. Publish test results
+      #
+      # Uploads the TRX file as a workflow artifact so you can inspect it even
+      # when tests pass. When tests fail, this is how you see which ones and why
+      # without reading raw log output.
+      #
+      # if: always() — run this step even if the test step failed. Without this,
+      # a test failure would skip the upload and you'd lose the results.
+      # -----------------------------------------------------------------------
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ./test-results/*.trx
+          retention-days: 7
