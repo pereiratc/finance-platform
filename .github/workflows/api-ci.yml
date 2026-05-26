@@ -70,7 +70,7 @@ jobs:
       # `dotnet restore` locally and commit the resulting lock file.
       # -----------------------------------------------------------------------
       - name: Restore
-        run: dotnet restore src/api/FinancePlatform.slnx
+        run: dotnet restore FinancePlatform.slnx
 
       # -----------------------------------------------------------------------
       # 5. Build
@@ -81,7 +81,7 @@ jobs:
       #             that passed tests is the binary that runs in production.
       # -----------------------------------------------------------------------
       - name: Build
-        run: dotnet build src/api/FinancePlatform.slnx --no-restore -c Release
+        run: dotnet build FinancePlatform.slnx --no-restore -c Release
 
       # -----------------------------------------------------------------------
       # 6. Test
