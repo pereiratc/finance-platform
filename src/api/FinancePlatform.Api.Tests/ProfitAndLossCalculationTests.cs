@@ -24,7 +24,7 @@ public class ProfitAndLossCalculationTests
             },
             TotalRevenue = 60000m,
             TotalExpenses = 35000m,
-            NetIncome = 25000m
+            NetIncome = 99999m
         };
 
         // Act & Assert
@@ -46,4 +46,4 @@ public class ProfitAndLossCalculationTests
         dto.NetIncome.Should().BeNegative();
         dto.NetIncome.Should().Be(dto.TotalRevenue - dto.TotalExpenses);
     }
-}
+}cat src/api/FinancePlatform.Api.Tests/ProfitAndLossCalculationTests.cs
