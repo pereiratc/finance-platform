@@ -110,7 +110,7 @@ Two GitHub Actions workflows run on every push:
 
 **`api-cd.yml`** — triggers on merge to `main`:
 - Builds the Docker image (tests run inside the build stage)
-- Pushes to GitHub Container Registry tagged with commit SHA and `latest`
+- Pushes to GitHub Container Registry tagged with commit SHA and `main`
 
 The Dockerfile uses a multi-stage build — the SDK image compiles and runs tests, the runtime image contains only the published output. A failing test stops the image from being created.
 
