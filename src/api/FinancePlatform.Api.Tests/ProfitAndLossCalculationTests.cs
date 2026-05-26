@@ -24,7 +24,7 @@ public class ProfitAndLossCalculationTests
             },
             TotalRevenue = 60000m,
             TotalExpenses = 35000m,
-            NetIncome = 99999m
+            NetIncome = 25000m
         };
 
         // Act & Assert
