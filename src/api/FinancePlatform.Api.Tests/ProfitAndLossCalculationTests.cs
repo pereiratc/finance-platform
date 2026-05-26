@@ -46,4 +46,4 @@ public class ProfitAndLossCalculationTests
         dto.NetIncome.Should().BeNegative();
         dto.NetIncome.Should().Be(dto.TotalRevenue - dto.TotalExpenses);
     }
-}cat src/api/FinancePlatform.Api.Tests/ProfitAndLossCalculationTests.cs
+}
