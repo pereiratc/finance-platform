@@ -99,7 +99,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Test
         run: |
-          dotnet test src/api/FinancePlatform.slnx \
+          dotnet test FinancePlatform.slnx \
             --no-build \
             -c Release \
             --logger "trx;LogFileName=test-results.trx" \
