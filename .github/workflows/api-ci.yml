@@ -105,7 +105,7 @@ jobs:
             --logger "trx;LogFileName=test-results.trx" \
             --results-directory ./test-results
       - name: Verify Docker build
-        run: docker build -f src/api/FinancePlatform.Api/Dockerfile ./src/api
+        run: docker build -f src/api/FinancePlatform.Api/Dockerfile .
       # -----------------------------------------------------------------------
       # 7. Publish test results
       #
