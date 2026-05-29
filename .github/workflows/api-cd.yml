@@ -88,8 +88,6 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
-          flavor: |
-            latest=true
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-,format=short
@@ -116,6 +114,7 @@ jobs:
       # under 5 seconds.
       # -----------------------------------------------------------------------
       - name: Build and push
+        id: build-and-push
         uses: docker/build-push-action@v6
         with:
           context: .
