@@ -11,6 +11,7 @@ on:
     paths:
       - "src/api/**"
       - ".github/workflows/api-ci.yml"
+      - "README.md"
 
 jobs:
   build-and-test:
@@ -55,7 +56,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/src/api/**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/api/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
@@ -68,10 +69,20 @@ jobs:
       # `dotnet restore` locally and commit the resulting lock file.
       # -----------------------------------------------------------------------
       - name: Restore
-        run: dotnet restore src/api/FinancePlatform.slnx
+        run: dotnet restore FinancePlatform.slnx
 
       # -----------------------------------------------------------------------
-      # 5. Build
+      # 5. Enforce formatting
+      #
+      # dotnet format --verify-no-changes exits non-zero if any file would be
+      # reformatted. Must run after restore — it opens an MSBuild workspace
+      # which requires packages to be present.
+      # -----------------------------------------------------------------------
+      - name: Format check
+        run: dotnet format FinancePlatform.slnx --verify-no-changes
+
+      # -----------------------------------------------------------------------
+      # 6. Build
       #
       # --no-restore: skip restore since we just did it explicitly above.
       # -c Release: build the same configuration we'll publish and ship.
@@ -79,10 +90,10 @@ jobs:
       #             that passed tests is the binary that runs in production.
       # -----------------------------------------------------------------------
       - name: Build
-        run: dotnet build src/api/FinancePlatform.slnx --no-restore -c Release
+        run: dotnet build FinancePlatform.slnx --no-restore -c Release
 
       # -----------------------------------------------------------------------
-      # 6. Test
+      # 7. Test
       #
       # --no-build: skip rebuild since the build step just produced the binaries.
       # -c Release: run the Release build artifacts.
@@ -97,15 +108,15 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Test
         run: |
-          dotnet test src/api/FinancePlatform.slnx \
+          dotnet test FinancePlatform.slnx \
             --no-build \
             -c Release \
             --logger "trx;LogFileName=test-results.trx" \
             --results-directory ./test-results
       - name: Verify Docker build
-        run: docker build -f src/api/FinancePlatform.Api/Dockerfile ./src/api
+        run: docker build -f src/api/FinancePlatform.Api/Dockerfile .
       # -----------------------------------------------------------------------
-      # 7. Publish test results
+      # 8. Publish test results
       #
       # Uploads the TRX file as a workflow artifact so you can inspect it even
       # when tests pass. When tests fail, this is how you see which ones and why

@@ -21,7 +21,7 @@ public class Account
 
     public virtual AccountType AccountType { get; set; } = null!;
 
-    public virtual ICollection<Transaction> CreditedTransactions{ get; set; } = new List<Transaction>();
+    public virtual ICollection<Transaction> CreditedTransactions { get; set; } = new List<Transaction>();
 
     public virtual ICollection<Transaction> DebitedTransactions { get; set; } = new List<Transaction>();
 }
