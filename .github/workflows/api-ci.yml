@@ -39,18 +39,7 @@ jobs:
           dotnet-version: "10.x"
 
       # -----------------------------------------------------------------------
-      # 3. Enforce formatting
-      #
-      # dotnet format --verify-no-changes exits non-zero if any file would be
-      # reformatted. This catches style drift before it reaches main without
-      # requiring a separate linter. The check runs after SDK setup but before
-      # restore because it only needs the SDK, not the packages.
-      # -----------------------------------------------------------------------
-      - name: Format check
-        run: dotnet format FinancePlatform.slnx --verify-no-changes
-
-      # -----------------------------------------------------------------------
-      # 4. Cache NuGet packages
+      # 3. Cache NuGet packages
       #
       # NuGet restore downloads packages from nuget.org. On a cold runner that
       # takes 30-60 seconds. The cache action stores the global packages folder
@@ -72,7 +61,7 @@ jobs:
             ${{ runner.os }}-nuget-
 
       # -----------------------------------------------------------------------
-      # 5. Restore dependencies
+      # 4. Restore dependencies
       #
       # --locked-mode enforces that packages.lock.json (if present) is respected
       # exactly. This prevents silent version drift between runs. If you haven't
@@ -81,6 +70,16 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Restore
         run: dotnet restore FinancePlatform.slnx
+
+      # -----------------------------------------------------------------------
+      # 5. Enforce formatting
+      #
+      # dotnet format --verify-no-changes exits non-zero if any file would be
+      # reformatted. Must run after restore — it opens an MSBuild workspace
+      # which requires packages to be present.
+      # -----------------------------------------------------------------------
+      - name: Format check
+        run: dotnet format FinancePlatform.slnx --verify-no-changes
 
       # -----------------------------------------------------------------------
       # 6. Build
