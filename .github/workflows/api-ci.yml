@@ -9,10 +9,9 @@ on:
     branches:
       - main
     paths:
-    - "src/api/**"
-    - ".github/workflows/api-ci.yml"
-    - ".github/workflows/api-cd.yml"
-    - "README.md"
+      - "src/api/**"
+      - ".github/workflows/api-ci.yml"
+      - "README.md"
 
 jobs:
   build-and-test:
@@ -40,7 +39,18 @@ jobs:
           dotnet-version: "10.x"
 
       # -----------------------------------------------------------------------
-      # 3. Cache NuGet packages
+      # 3. Enforce formatting
+      #
+      # dotnet format --verify-no-changes exits non-zero if any file would be
+      # reformatted. This catches style drift before it reaches main without
+      # requiring a separate linter. The check runs after SDK setup but before
+      # restore because it only needs the SDK, not the packages.
+      # -----------------------------------------------------------------------
+      - name: Format check
+        run: dotnet format FinancePlatform.slnx --verify-no-changes
+
+      # -----------------------------------------------------------------------
+      # 4. Cache NuGet packages
       #
       # NuGet restore downloads packages from nuget.org. On a cold runner that
       # takes 30-60 seconds. The cache action stores the global packages folder
@@ -57,12 +67,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/src/api/**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/api/**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
       # -----------------------------------------------------------------------
-      # 4. Restore dependencies
+      # 5. Restore dependencies
       #
       # --locked-mode enforces that packages.lock.json (if present) is respected
       # exactly. This prevents silent version drift between runs. If you haven't
@@ -73,7 +83,7 @@ jobs:
         run: dotnet restore FinancePlatform.slnx
 
       # -----------------------------------------------------------------------
-      # 5. Build
+      # 6. Build
       #
       # --no-restore: skip restore since we just did it explicitly above.
       # -c Release: build the same configuration we'll publish and ship.
@@ -84,7 +94,7 @@ jobs:
         run: dotnet build FinancePlatform.slnx --no-restore -c Release
 
       # -----------------------------------------------------------------------
-      # 6. Test
+      # 7. Test
       #
       # --no-build: skip rebuild since the build step just produced the binaries.
       # -c Release: run the Release build artifacts.
@@ -107,7 +117,7 @@ jobs:
       - name: Verify Docker build
         run: docker build -f src/api/FinancePlatform.Api/Dockerfile .
       # -----------------------------------------------------------------------
-      # 7. Publish test results
+      # 8. Publish test results
       #
       # Uploads the TRX file as a workflow artifact so you can inspect it even
       # when tests pass. When tests fail, this is how you see which ones and why

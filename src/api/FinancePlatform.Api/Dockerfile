@@ -16,11 +16,6 @@ RUN dotnet restore FinancePlatform.slnx
 # Copy the rest of the source
 COPY src/api/ src/api/
 
-# Run tests — a failing test stops the image build here
-RUN dotnet test src/api/FinancePlatform.Api.Tests \
-    --no-restore \
-    --verbosity minimal
-
 # Publish the API
 RUN dotnet publish src/api/FinancePlatform.Api \
     --no-restore \
