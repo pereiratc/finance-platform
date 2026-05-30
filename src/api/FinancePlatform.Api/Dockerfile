@@ -18,7 +18,6 @@ COPY src/api/ src/api/
 
 # Publish the API
 RUN dotnet publish src/api/FinancePlatform.Api \
-    --no-restore \
     --configuration Release \
     --output /app/publish
 
