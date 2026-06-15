@@ -36,6 +36,10 @@ jobs:
       contents: read
       packages: write
 
+    # Steps to build and push the Docker image. Expose the pushed image's digest so the deploy job can reference or use it.
+    outputs:
+      digest: ${{ steps.push-image.outputs.digest }}
+
     steps:
       # -----------------------------------------------------------------------
       # 1. Check out the code
@@ -135,3 +139,36 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Print image digest
         run: echo "Image pushed with digest ${{ steps.build-and-push.outputs.digest }}"
+      
+
+  # ===========================================================================
+  # Deploy — update the Container App to the image we just built.
+  # Runs only after build-and-push succeeds. Authenticates with OIDC, so there
+  # is no password anywhere — just the three ID secrets you added.
+  # ===========================================================================
+  deploy:
+    name: Deploy to Azure Container Apps
+    needs: build-and-push # Only run if the build-and-push job succeeded
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # Needed for OIDC authentication to Azure. lets the job request a short-lived OIDC token from GitHub's OIDC provider.
+      contents: read   # Needed to check out code if necessary (not strictly needed here since we don't use the code in this job)
+
+    steps:
+      # Passwordless login via the fedetared credentials from the OIDC token. The Azure CLI action handles the OIDC flow under the hood, so you don't have to manually exchange tokens or manage secrets.
+      - name: Azure Login # Authenticate to Azure using OIDC federated credentials. Without this step, the az CLI commands in the next step would fail with "az: error: Please run 'az login' to setup account." because they require authentication to execute.
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Point the app at the exact digest CI just pushed. This ensures the deployed image is exactly what was built and tested in the previous job, eliminating "works on my machine" issues. Forces a new version.
+      - name: Deploy to Container Apps
+        run: |
+          az extension add --name containerapp --only-show-errors # Install the Container Apps extension if not already available in the runner image.
+          az containerapp update \ # Update an existing Container App
+            --name finance-platform-api \  # Your Container App name
+            --resource-group rg-finance-platform-dev \  # Your resource group on azure
+            --image ${{ env.IMAGE_NAME }}@${{ needs.build-and-push.outputs.digest }}  # Use the digest to ensure exact image. Change only the image and leave other settings (replicas, env vars, etc.) unchanged.
