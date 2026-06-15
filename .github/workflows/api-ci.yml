@@ -10,7 +10,7 @@ on:
       - main
     paths:
       - "src/api/**"
-      - ".github/workflows/api-ci.yml"
+      - ".github/workflows/**"
       - "README.md"
 
 jobs:
