@@ -22,6 +22,14 @@ env:
   # github.repository is "pereiratc/finance-platform" automatically.
   IMAGE_NAME: ghcr.io/${{ github.repository }}/api
 
+# Only one deployment of this workflow runs at a time. If a newer push starts
+# while an older run is still going, the older run is cancelled so it can never
+# deploy stale bits after the newer one. This prevents out-of-order rollbacks.
+concurrency:
+  group: api-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+
 jobs:
   build-and-push:
     name: Build & Push Docker Image
