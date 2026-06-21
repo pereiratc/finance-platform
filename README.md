@@ -149,7 +149,7 @@ finance-platform/
 - [x] **Phase 1** — .NET 10 Web API + Docker (3 controllers, DTOs, multi-stage build)
 - [x] **Phase 2** — GitHub Actions CI/CD (build, test, push to GHCR)
 - [ ] **Phase 3** — React + TypeScript frontend
-- [ ] **Phase 4** — Azure deployment (Container Apps, Azure SQL, Key Vault)
+- [X] **Phase 4** — Azure deployment (Container Apps, Azure SQL, Key Vault)
 - [ ] **Phase 5** — Infrastructure as Code (Bicep)
 - [ ] **Phase 6** — Power BI analytics layer
 - [ ] **Phase 7** — Observability + production polish
