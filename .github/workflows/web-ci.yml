@@ -1,0 +1,35 @@
+name: Web CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/web/**'
+      - '.github/workflows/web-ci.yml'
+
+jobs:
+  build:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'          # set to your local `node -v` major
+          cache: 'npm'
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install (clean, lockfile-exact)
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (type-check + bundle)
+        run: npm run build
